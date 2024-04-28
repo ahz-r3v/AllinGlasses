@@ -6,7 +6,7 @@ from multiprocessing import Process, Queue
 
 import kimi
 import local_llm
-import ChatWindow.chat_window as window
+import ChatUI.chat_window as window
 
 use_remote = True
 
@@ -14,23 +14,14 @@ def main(queue):
     # 定义一个函数来处理每一行输出
     pattern = re.compile(r'(\d+:)([^:]+)')
     start_loop = False
-    COUNTER = 30
+    COUNTER = 50
     counter = COUNTER
     tick = 0.5
     question = ''
     # 使用Popen类创建一个进程，用于语音识别程序
     process = subprocess.Popen([
-                                # 'arecord',
-                                # '-l'
                                 'sudo', 
                                 './build-aarch64-linux-gnu/install/bin/sherpa-ncnn-alsa', 
-                                # './sherpa-ncnn-streaming-zipformer-small-bilingual-zh-en-2023-02-16/tokens.txt',
-                                # './sherpa-ncnn-streaming-zipformer-small-bilingual-zh-en-2023-02-16/encoder_jit_trace-pnnx.ncnn.param',
-                                # './sherpa-ncnn-streaming-zipformer-small-bilingual-zh-en-2023-02-16/encoder_jit_trace-pnnx.ncnn.bin',
-                                # './sherpa-ncnn-streaming-zipformer-small-bilingual-zh-en-2023-02-16/decoder_jit_trace-pnnx.ncnn.param',
-                                # './sherpa-ncnn-streaming-zipformer-small-bilingual-zh-en-2023-02-16/decoder_jit_trace-pnnx.ncnn.bin',
-                                # './sherpa-ncnn-streaming-zipformer-small-bilingual-zh-en-2023-02-16/joiner_jit_trace-pnnx.ncnn.param',
-                                # './sherpa-ncnn-streaming-zipformer-small-bilingual-zh-en-2023-02-16/joiner_jit_trace-pnnx.ncnn.bin',
                                 './sherpa-ncnn-streaming-zipformer-bilingual-zh-en-2023-02-13/tokens.txt',
                                 './sherpa-ncnn-streaming-zipformer-bilingual-zh-en-2023-02-13/encoder_jit_trace-pnnx.ncnn.param',
                                 './sherpa-ncnn-streaming-zipformer-bilingual-zh-en-2023-02-13/encoder_jit_trace-pnnx.ncnn.bin',
@@ -52,7 +43,6 @@ def main(queue):
     try:
         while True:
             readable, _, _ = select.select([process.stderr], [], [], tick)
-            
             # 如果readable不为空，说明stdout有新的输出
             if process.stderr in readable:
                 # 读取新的输出
@@ -68,9 +58,6 @@ def main(queue):
                     else:
                         print(new_output)
                 else :
-                    # time.sleep(3)
-                    # process.stderr.write("\n")
-                    # process.stderr.flush()
                     new_output = process.stderr.readline()
                     # 不是空字符串
                     if new_output != "\n":
@@ -81,7 +68,10 @@ def main(queue):
                         counter -= tick
                         # 时间到，进行输出
                         if counter <= 0 and question != "":
-                            # TODO
+                            # 正则去掉前面的数字
+                            match = re.match(r'\d+:', question)
+                            if match:
+                                question = question.lstrip(match.group(0))
                             print("问: " + question)
                             queue.put("问: " + question)
                             print("答: " + chat(question))
