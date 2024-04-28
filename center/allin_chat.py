@@ -1,10 +1,16 @@
 import subprocess
 import re
 import select
+import time
+from multiprocessing import Process, Queue
 
 import kimi
+import local_llm
+import ChatWindow.chat_window as window
 
-def main():
+use_remote = True
+
+def main(queue):
     # 定义一个函数来处理每一行输出
     pattern = re.compile(r'(\d+:)([^:]+)')
     start_loop = False
@@ -77,7 +83,9 @@ def main():
                         if counter <= 0 and question != "":
                             # TODO
                             print("问: " + question)
-                            # print("答: " + kimi.chat(question))
+                            queue.put("问: " + question)
+                            print("答: " + chat(question))
+                            queue.put("答: " + chat(question))
                             question = ""
                             counter = COUNTER
             # 如果没有检测到新输出，计时器--
@@ -100,5 +108,16 @@ def main():
             process.terminate()
         print("子程序已关闭")
 
+def chat(query):
+    if use_remote:
+        return kimi.remote_chat(query, remote_history)
+    else:
+        return local_llm.chat(query)
+
 if __name__ == "__main__":
-    main()
+    queue = Queue()
+    chat_window = Process(target=window.main, args=(queue,))
+    chat_window.start()
+    main(queue)
+    chat_window.join()
+    
