@@ -17,7 +17,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.sum=0                                                  #气泡数量
         self.widgetlist = []                                        #记录气泡
         self.text = ""                                              # 存储信息
-        self.icon_kimi = QtGui.QPixmap("ChatWindow/kimi-logo.png")                          # 头像
+        self.icon_kimi = QtGui.QPixmap("ChatWindow/kimi-logo.png")  # 头像
         self.icon_user = QtGui.QPixmap("ChatWindow/user-logo.png")
         #设置聊天窗口样式 隐藏滚动条
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -76,14 +76,6 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         else:
             Set_question.set_return(self, self.icon_kimi, self.text,QtCore.Qt.LeftToRight)   # 调用new_widget.py中方法生成右气泡
             QApplication.processEvents()                                # 等待并处理主循环事件队列
-
-
-        # 你可以通过这个下面代码中的数组单独控制每一条气泡
-        # self.widgetlist.append(self.widget)
-        # print(self.widgetlist)
-        # for i in range(self.sum):
-        #     f=self.widgetlist[i].findChild(QTextBrowser)    #气泡内QTextBrowser对象
-        #     print("第{0}条气泡".format(i),f.toPlainText())
 
     # 修改气泡长宽
     def set_widget(self):

@@ -4,7 +4,7 @@ import select
 import time
 from multiprocessing import Process, Queue
 
-import kimi
+import chat_client
 import local_llm
 import ChatUI.chat_window as window
 
@@ -72,6 +72,8 @@ def main(queue):
                             match = re.match(r'\d+:', question)
                             if match:
                                 question = question.lstrip(match.group(0))
+                                if re.match(r"^切换", question):
+                                    use_remote = not use_remote
                             print("问: " + question)
                             queue.put("问: " + question)
                             print("答: " + chat(question))
@@ -100,12 +102,13 @@ def main(queue):
 
 def chat(query):
     if use_remote:
-        return kimi.remote_chat(query, remote_history)
+        return kimi.remote_chat(query)
     else:
         return local_llm.chat(query)
 
 if __name__ == "__main__":
     queue = Queue()
+    kimi = chat_client.Kimi()
     chat_window = Process(target=window.main, args=(queue,))
     chat_window.start()
     main(queue)

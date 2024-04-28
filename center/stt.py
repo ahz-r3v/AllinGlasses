@@ -2,7 +2,7 @@ import subprocess
 import re
 import select
 
-import kimi
+import chat_client
 
 def main():
     # 定义一个函数来处理每一行输出
